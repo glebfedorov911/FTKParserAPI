@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 
-import aiohttp
-
 from bs4 import BeautifulSoup
+import aiohttp
+import os
+
+from config.settings import config
 
 
 class HTTPClient(ABC):
@@ -13,31 +15,54 @@ class HTTPClient(ABC):
                          *, 
                          headers: dict = None, json: dict = None) -> str: ...
 
-class Requestor(ABC):
-
-
     @abstractmethod
-    async def get_html(self, url: str, *, json: dict = None, headers: dict = None) -> str:
+    async def get_photo(self, ):
         ...
+
+class Requestor:
+    ...
 
 class HTMLParser(ABC):
     
 
     @abstractmethod
-    def get_image_from_page(self, html: str, selector: str) -> str:
+    def get_image_from_page(self, selector: str, index: int) -> str:
         ...
 
     @abstractmethod
-    def save_table_to_json(self, html: str, selector: str) -> str:
+    def save_table_to_json(self, selector: str, index: int) -> str:
         ...
     
     @abstractmethod
-    def get_tag_by_tag(self, html: str, selector: str) -> str:
+    def get_tag_by_tag(self, selector: str, index: int) -> str:
         ...
 
 class BeautifulSoupHTMLParser(HTMLParser):
     
-    ...            
+
+    def __init__(self, html: str, base_url: str):
+        self.soup = BeautifulSoup(html, "html.parser")
+        self.base_url = base_url
+        self.dir_with_image = config.ftk_parser_config.image_path
+
+        if not os.path.exists(self.dir_with_image):
+            os.mkdir(self.dir_with_image)
+
+    def get_image_from_page(self, selector: str, index: int) -> str:
+        image = self.soup.find_all(class_=selector)[index]
+
+        src = image.get("src")
+        if not src:
+            raise ValueError("Incorrect selector, not found tag")
+        image_name = src.split("/")[-1]
+        self.image_path = f"{self.dir_with_image}/{image_name}"
+
+        if not os.path.exists(self.image_path):
+            with open(self.image_path, "wb") as file:
+                file.write(content)
+
+        return self.image_path
+
 
 class HTTPClientAioHttp(HTTPClient):
 
@@ -71,55 +96,7 @@ class GetRequestor(Requestor):
 
     async def get_html(self, url: str, *, json: dict = None, headers: dict = None) -> str:
         return await self.http_client.do_request("GET", url, headers=headers, json=json)
-    
-class PostRequestor(Requestor):
-    
-
-    def __init__(
-            self,
-            http_client: HTTPClient
-    ) -> None:
-        self.http_client = http_client
-
-    async def get_html(self, url: str, *, json: dict = None, headers: dict = None) -> str:
-        return await self.http_client.do_request("POST", url, headers=headers, json=json)
-    
-class PutRequestor(Requestor):
-    
-
-    def __init__(
-            self,
-            http_client: HTTPClient
-    ) -> None:
-        self.http_client = http_client
-
-    async def get_html(self, url: str, *, json: dict = None, headers: dict = None) -> str:
-        return await self.http_client.do_request("PUT", url, headers=headers, json=json)
-
-class PatchRequestor(Requestor):
-    
-
-    def __init__(
-            self,
-            http_client: HTTPClient
-    ) -> None:
-        self.http_client = http_client
-
-    async def get_html(self, url: str, *, json: dict = None, headers: dict = None) -> str:
-        return await self.http_client.do_request("PATCH", url, headers=headers, json=json)
-    
-class DeleteRequestor(Requestor):
-    
-
-    def __init__(
-            self,
-            http_client: HTTPClient
-    ) -> None:
-        self.http_client = http_client
-
-    async def get_html(self, url: str, *, json: dict = None, headers: dict = None) -> str:
-        return await self.http_client.do_request("DELETE", url, headers=headers, json=json)
-
+  
 class RequestorFabric:
 
     def __init__(
@@ -132,12 +109,8 @@ class RequestorFabric:
     def create_requestor(self, method: str) -> Requestor:
         if method.lower() == "get":
             return GetRequestor(self.http_client)
-        if method.lower() == "post":
-            return PostRequestor(self.http_client)
-        if method.lower() == "put":
-            return PutRequestor(self.http_client)
-        if method.lower() == "patch":
-            return PatchRequestor(self.http_client)
-        if method.lower() == "delete":
-            return DeleteRequestor(self.http_client)
+        if method.lower() == "post": ...
+        if method.lower() == "put": ...
+        if method.lower() == "patch": ...
+        if method.lower() == "delete": ...
         raise ValueError(f"Not found requestor for method {method}")
