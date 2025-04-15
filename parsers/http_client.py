@@ -59,13 +59,12 @@ class BeautifulSoupHTMLParser(HTMLParser):
 
         if not os.path.exists(self.image_path):
             with open(self.image_path, "wb") as file:
-                file.write(content)
+                file.write(...)
 
         return self.image_path
 
 
 class HTTPClientAioHttp(HTTPClient):
-
 
     async def do_request(self, method: str, url: str, 
                          *, 
@@ -76,15 +75,39 @@ class HTTPClientAioHttp(HTTPClient):
         
         Method do request with aiohttp
         """
+        return await self._make_request(method, url, 
+                                        headers=headers, 
+                                        json=json, 
+                                        return_type="text")
+    
+    async def get_photo(self, url: str, *, headers: dict = None):
+        """
+        url = address of page
+        
+        Method get image content
+        """
+        return await self._make_request("GET", url, 
+                                        headers=headers, 
+                                        return_type="bytes")
+            
+    async def _make_request(self, method: str, url: str, *,
+                            headers: dict = None,
+                            json: dict = None,
+                            return_type: str = "text"
+                            ) -> str | bytes:
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.request(method, url, headers=headers, json=json) as response:
                     response.raise_for_status()
-                    return await response.text()
+                    if return_type == "text":
+                        return await response.text()
+                    elif return_type == "bytes":
+                        return await response.read()
+                    raise ValueError(f"Not found this return type {return_type}")
             except aiohttp.ClientError as e:
                 print(f"Request failed: {e}")
                 raise ValueError("Bad Request")
-
+            
 class GetRequestor(Requestor):
     
 
