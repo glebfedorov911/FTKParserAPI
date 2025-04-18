@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 
 class FTKParserConfig(BaseModel):
-    image_path: str = "/parsers/ftk_image/"
+    image_path: str = "parsers/ftk_image/"
 
 class ParserConfig(BaseSettings):
     ftk_parser_config: FTKParserConfig = FTKParserConfig()

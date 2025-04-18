@@ -40,4 +40,4 @@ class HTTPClientAioHttp(HTTPClient):
             return response
         except aiohttp.ClientError as e:
             print(f"Request failed: {e}")
-            raise ValueError("Bad Request")xz
+            raise ValueError("Bad Request")

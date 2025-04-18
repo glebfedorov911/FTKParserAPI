@@ -11,15 +11,15 @@ class HTMLParser(ABC):
     
 
     @abstractmethod
-    def get_image_from_page(self, selector: str, index: int) -> str:
+    async def get_image_from_page(self, selector: str, index: int) -> str:
         ...
 
     @abstractmethod
-    def save_table_to_json(self, selector: str, index: int) -> str:
+    async def save_table_to_json(self, selector: str, index: int) -> str:
         ...
     
     @abstractmethod
-    def get_tag_by_tag(self, selector: str, index: int) -> str:
+    async def get_tag_by_tag(self, selector: str, index: int) -> str:
         ...
 
 class BeautifulSoupHTMLParser(HTMLParser):
@@ -32,9 +32,9 @@ class BeautifulSoupHTMLParser(HTMLParser):
 
         self.dir_with_image = config.ftk_parser_config.image_path
         if not os.path.exists(self.dir_with_image):
-            os.mkdir(self.dir_with_image)
+            os.makedirs(self.dir_with_image, exist_ok=True)
 
-    def get_image_from_page(self, selector: str, index: int) -> str:
+    async def get_image_from_page(self, selector: str, index: int) -> str:
         image = self.soup.find_all(class_=selector)[index]
 
         src = image.get("src")
@@ -45,8 +45,14 @@ class BeautifulSoupHTMLParser(HTMLParser):
         self.image_path = f"{self.dir_with_image}/{image_name}"
 
         if not os.path.exists(self.image_path):
-            photo = self.requestor.get_photo(photo_url)
+            photo = await self.requestor.get_photo(photo_url)
             with open(self.image_path, "wb") as file:
                 file.write(photo)
 
         return self.image_path
+    
+    async def save_table_to_json(self, selector: str, index: int) -> str:
+        ...
+    
+    async def get_tag_by_tag(self, selector: str, index: int) -> str:
+        ...
