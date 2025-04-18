@@ -39,7 +39,7 @@ class FTKParser:
             url = url.format(num_page=self.current_pagination)
             html_with_products = await self.requestor.get_html(url, headers=self.headers)
             last_pagination = await self._get_last_pagination_num(html_with_products)
-            while self.current_pagination != last_pagination:
+            while self.current_pagination <= last_pagination:
                 results = await self._get_result_from_products(html_with_products)
                 self.current_pagination += 1
 
@@ -51,7 +51,7 @@ class FTKParser:
         results = []
         while True:
             try:
-                url_page_product = await self.parser.get_url_from_tag(html, "product__image-wrapper", current_page)
+                url_page_product = await self.parser.get_url_from_tag(html, "product__image-wrapper", self.current_page)
             except IndexError:
                 break
 
