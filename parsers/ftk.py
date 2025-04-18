@@ -21,6 +21,8 @@ class FTKParser:
     def __init__(self, requestor: GetRequestor, parser: HTMLParser):
         self.requestor = requestor
         self.parser = parser
+        self.current_pagination = 1
+        self.current_page = 0
 
     @property
     def headers(self):
@@ -31,33 +33,54 @@ class FTKParser:
 
     async def parse_data(self):
         for url in self.URLS:
-            current_pagination = 1
-            url = url.format(num_page=current_pagination)
+            self.current_pagination = 1
+            self.current_page = 0
 
-            html = await self.requestor.get_html(url, headers=self.headers)
-            current_page = 0
-            last_pagination = await self.parser.get_data_from_tag(html, "pagination__item", -2)
-            while current_pagination != last_pagination:
-                while True:
-                    try:
-                        url_page_product = await self.parser.get_url_from_tag(html, "product__image-wrapper", current_page)
-                    except IndexError:
-                        break
-                    html_inner = await self.requestor.get_html(url_page_product, headers=self.headers)
-                    title = await self.parser.get_data_from_tag(html_inner, "content__title wrapper", 0)
-                    json = await self.parser.save_table_to_json(html_inner, "info__specs-table", 0)
-                    signs = []
-                    sign_num = 0
-                    while True:
-                        try:
-                            sign = await self.parser.get_data_from_tag(html_inner, "item__feature-label", sign_num)
-                        except IndexError:
-                            break
-                        signs.append(sign)
-                        sign_num += 1
+            url = url.format(num_page=self.current_pagination)
+            html_with_products = await self.requestor.get_html(url, headers=self.headers)
+            last_pagination = await self._get_last_pagination_num(html_with_products)
+            while self.current_pagination != last_pagination:
+                results = await self._get_result_from_products(html_with_products)
+                self.current_pagination += 1
 
-                    print(title, json, signs)
-                    current_page += 1
+    async def _get_last_pagination_num(self, html: str):
+        LAST_PAGINATION_INDEX = -2
+        return await self.parser.get_data_from_tag(html, "pagination__item", LAST_PAGINATION_INDEX)
+    
+    async def _get_result_from_products(self, html):
+        results = []
+        while True:
+            try:
+                url_page_product = await self.parser.get_url_from_tag(html, "product__image-wrapper", current_page)
+            except IndexError:
+                break
 
-                current_pagination += 1
-            break
+            html_with_one_product = await self.requestor.get_html(url_page_product, headers=self.headers)
+            result = await self._get_data_from_page(html_with_one_product)
+            print(result)
+            results.append(result)
+
+            self.current_page += 1
+        return results
+    
+    async def _get_data_from_page(self, html: str) -> tuple:
+        title = await self.parser.get_data_from_tag(html, "content__title wrapper", 0)
+        characteristics = await self.parser.save_table_to_json(html, "info__specs-table", 0)
+        signs = await self._get_sings_from_page(html)
+        return {
+            "title": title,
+            "characteristics": characteristics,
+            "signs": signs
+        }
+
+    async def _get_sings_from_page(self, html: str) -> list:
+        signs = []
+        current_sign_num = 0
+        while True:
+            try:
+                sign = await self.parser.get_data_from_tag(html, "item__feature-label", current_sign_num)
+            except IndexError:
+                break
+            signs.append(sign)
+            current_sign_num += 1
+        return signs
