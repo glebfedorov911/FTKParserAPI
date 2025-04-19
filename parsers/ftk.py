@@ -3,6 +3,8 @@ from parsers.parser import HTMLParser
 
 from fake_useragent import UserAgent
 
+import asyncio
+
 
 
 class FTKParser:
@@ -18,11 +20,16 @@ class FTKParser:
         "https://www.f-tk.ru/catalog/poligrafiya/?PAGEN_1={num_page}",
     ]
     
-    def __init__(self, requestor: GetRequestor, parser: HTMLParser):
+    def __init__(
+            self, 
+            requestor: GetRequestor, 
+            parser: HTMLParser
+        ):
         self.requestor = requestor
         self.parser = parser
         self.current_pagination = 1
         self.current_page = 0
+        self.parsed_data = {}
 
     @property
     def headers(self):
@@ -31,7 +38,8 @@ class FTKParser:
             "User-Agent": ua.random
         }
 
-    async def parse_data(self):
+    async def parse_data(self) -> dict:
+
         for url in self.URLS:
             self.current_pagination = 1
             self.current_page = 0
@@ -39,14 +47,23 @@ class FTKParser:
             url = url.format(num_page=self.current_pagination)
             html_with_products = await self.requestor.get_html(url, headers=self.headers)
             last_pagination = await self._get_last_pagination_num(html_with_products)
+            key_parsed_data = url.split("/")[-2]
+
             while self.current_pagination <= last_pagination:
                 results = await self._get_result_from_products(html_with_products)
+                self._set_result(key_parsed_data, results)
                 self.current_pagination += 1
+
+        return self.parsed_data
 
     async def _get_last_pagination_num(self, html: str):
         LAST_PAGINATION_INDEX = -2
-        return await self.parser.get_data_from_tag(html, "pagination__item", LAST_PAGINATION_INDEX)
-    
+        try:
+            last_num = await self.parser.get_data_from_tag(html, "pagination__item", LAST_PAGINATION_INDEX)
+            return int(last_num)
+        except:
+            return 1
+
     async def _get_result_from_products(self, html):
         results = []
         while True:
@@ -57,8 +74,8 @@ class FTKParser:
 
             html_with_one_product = await self.requestor.get_html(url_page_product, headers=self.headers)
             result = await self._get_data_from_page(html_with_one_product)
-            print(result)
             results.append(result)
+            await asyncio.sleep(1)
 
             self.current_page += 1
         return results
@@ -84,3 +101,10 @@ class FTKParser:
             signs.append(sign)
             current_sign_num += 1
         return signs
+    
+    def _set_result(self, key: str, results: list):
+        if key not in self.parsed_data:
+            self.parsed_data[key] = []
+
+        for result in results:
+            self.parsed_data[key].append(result)

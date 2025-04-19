@@ -111,7 +111,7 @@ class BeautifulSoupTableToJson(BeautifulSoupMixin):
                 data_from_td = self._clear_text_from_tag(td)
             data_from_th = self._clear_text_from_tag(th)
             
-            table_to_dict[data_from_th] = data_from_td
+            table_to_dict[data_from_th] = self._double_slash_to_one(data_from_td)
 
         return table_to_dict
     
