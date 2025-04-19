@@ -2,6 +2,7 @@ from parsers.requestor import GetRequestor
 from parsers.parser import HTMLParser
 
 from fake_useragent import UserAgent
+import aiohttp
 
 import asyncio
 
@@ -9,14 +10,14 @@ import asyncio
 
 class FTKParser:
     URLS = [
-        "https://www.f-tk.ru/catalog/spetsodezhda/?PAGEN_1={num_page}",
-        "https://www.f-tk.ru/catalog/spetsobuv/?PAGEN_1={num_page}",
-        "https://www.f-tk.ru/catalog/siz/?PAGEN_1={num_page}",
-        "https://www.f-tk.ru/catalog/zashchita_ruk/?PAGEN_1={num_page}",
-        "https://www.f-tk.ru/catalog/tekstil_myagkiy_inventar/?PAGEN_1={num_page}",
-        "https://www.f-tk.ru/catalog/khoztovary_inventar_mebel/?PAGEN_1={num_page}",
-        "https://www.f-tk.ru/catalog/logotipy_/?PAGEN_1={num_page}",
-        "https://www.f-tk.ru/catalog/po_otraslyam_/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/spetsodezhda/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/spetsobuv/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/siz/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/zashchita_ruk/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/tekstil_myagkiy_inventar/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/khoztovary_inventar_mebel/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/logotipy_/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/po_otraslyam_/?PAGEN_1={num_page}",
         "https://www.f-tk.ru/catalog/poligrafiya/?PAGEN_1={num_page}",
     ]
     
@@ -68,26 +69,30 @@ class FTKParser:
         results = []
         while True:
             try:
-                url_page_product = await self.parser.get_url_from_tag(html, "product__image-wrapper", self.current_page)
-            except IndexError:
-                break
+                try:
+                    url_page_product = await self.parser.get_url_from_tag(html, "product__image-wrapper", self.current_page)
+                except IndexError:
+                    break
 
-            html_with_one_product = await self.requestor.get_html(url_page_product, headers=self.headers)
-            result = await self._get_data_from_page(html_with_one_product)
-            results.append(result)
-            await asyncio.sleep(1)
-
-            self.current_page += 1
+                html_with_one_product = await self.requestor.get_html(url_page_product, headers=self.headers)
+                result = await self._get_data_from_page(url_page_product, html_with_one_product)
+                results.append(result)
+                await asyncio.sleep(1)
+            except aiohttp.ClientError:
+                self.current_page -= 1
+            finally:
+                self.current_page += 1
         return results
     
-    async def _get_data_from_page(self, html: str) -> tuple:
+    async def _get_data_from_page(self, url: str, html: str) -> tuple:
         title = await self.parser.get_data_from_tag(html, "content__title wrapper", 0)
         characteristics = await self.parser.save_table_to_json(html, "info__specs-table", 0)
         signs = await self._get_sings_from_page(html)
         return {
+            "url": url,
             "title": title,
             "characteristics": characteristics,
-            "signs": signs
+            "signs": signs,
         }
 
     async def _get_sings_from_page(self, html: str) -> list:

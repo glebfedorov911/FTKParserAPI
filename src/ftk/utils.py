@@ -23,7 +23,7 @@ class Repository(ABC):
         ...
 
     @abstractmethod
-    async def get_all(self) -> List[Type[Base]]:    
+    async def get_all(self, **kwargs) -> List[Type[Base]]:    
         ...
 
     @abstractmethod
@@ -62,29 +62,35 @@ class BaseRepository(Repository):
             raise ValueError("Cannot update data")
         
     async def _update(self, id: int, **kwargs) -> Type[Base]:
-        data = self.get_data_by_id(id)
+        data = await self.get_data_by_id(id)
         updated_data = self._update_instance(data, **kwargs)
         await self._commit_and_refresh(updated_data)
         return updated_data
 
-    async def _update_instance(self, instance: Type[Base], /, **kwargs) -> Type[Base]:
+    def _update_instance(self, instance: Type[Base], /, **kwargs) -> Type[Base]:
         for key, value in kwargs.items():
             if value is not None: 
                 setattr(instance, key, value)
         return instance     
 
     async def get_data_by_id(self, id: int) -> Type[Base]:
-        data = await self.get_all()
+        stmt = select(self.model).where(self.model.id==id)
+        data = await self._get(stmt) 
         if not data:
-            print(f"Failed {e}")
+            print(f"Failed")
             raise ValueError(f"Not found data with id {id}")
         return data[0]
     
-    async def get_all(self) -> List[Type[Base]]:
-        stmt = select(self.model).where(self.model.id==id)
+    async def get_all(self, **kwargs) -> List[Type[Base]]:
+        stmt = select(self.model)
+        for k, v in kwargs.items():
+            stmt = stmt.where(getattr(self.model, k)==v)
+        return await self._get(stmt)
+    
+    async def _get(self, stmt):
         result: Result = await self.session.execute(stmt)
         return result.scalars().all()
-    
+
     async def delete(self, id: int) -> None:    
         data = await self.get_data_by_id(id)
         await self.session.delete(data)
