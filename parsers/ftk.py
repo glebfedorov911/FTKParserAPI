@@ -1,3 +1,4 @@
+import aiohttp.client_exceptions
 from parsers.requestor import GetRequestor
 from parsers.parser import HTMLParser
 
@@ -9,7 +10,7 @@ import asyncio
 
 
 class FTKParser:
-    URLS = [
+    urls = [
         "https://www.f-tk.ru/catalog/spetsodezhda/?PAGEN_1={num_page}",
         "https://www.f-tk.ru/catalog/spetsobuv/?PAGEN_1={num_page}",
         "https://www.f-tk.ru/catalog/siz/?PAGEN_1={num_page}",
@@ -41,20 +42,30 @@ class FTKParser:
 
     async def parse_data(self) -> dict:
 
-        for url in self.URLS:
+        for url in self.urls:
             self.current_pagination = 1
             self.current_page = 0
 
-            url = url.format(num_page=self.current_pagination)
-            html_with_products = await self.requestor.get_html(url, headers=self.headers)
-            last_pagination = await self._get_last_pagination_num(html_with_products)
-            key_parsed_data = url.split("/")[-2]
+            try:
+                url_formatted = url.format(num_page=self.current_pagination)
+                html_with_products = await self.requestor.get_html(url_formatted, headers=self.headers)
+                last_pagination = await self._get_last_pagination_num(html_with_products)
+                key_parsed_data = url_formatted.split("/")[-2]
+            except aiohttp.ClientError as e:
+                print(f"do again because {e}")
+                self.urls.append(url)
+
 
             while self.current_pagination <= last_pagination:
-                results = await self._get_result_from_products(html_with_products)
-                self._set_result(key_parsed_data, results)
-                self.current_pagination += 1
-
+                try:
+                    results = await self._get_result_from_products(html_with_products)
+                    self._set_result(key_parsed_data, results)
+                except aiohttp.ClientError as e:
+                    print(f"do again because {e}")
+                    self.current_pagination -= 1
+                finally:
+                    self.current_pagination += 1
+                    
         return self.parsed_data
 
     async def _get_last_pagination_num(self, html: str):
@@ -78,7 +89,8 @@ class FTKParser:
                 result = await self._get_data_from_page(url_page_product, html_with_one_product)
                 results.append(result)
                 await asyncio.sleep(1)
-            except aiohttp.ClientError:
+            except aiohttp.ClientError as e:
+                print(f"do again because {e}")
                 self.current_page -= 1
             finally:
                 self.current_page += 1
