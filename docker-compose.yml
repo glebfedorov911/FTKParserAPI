@@ -9,8 +9,8 @@ services:
     depends_on:
       - db
     environment:
-      - POSTGRES_URL=${POSTGRES_URL}
-      - DATABASE_ECHO=${DATABASE_ECHO}
+      - POSTGRES_URL=postgresql+asyncpg://postgres:TEST_BASE_PASSWORD123@db:5432/ftk
+      - DATABASE_ECHO=True
     volumes:
       - ./alembic/versions:/app/alembic/versions
       - ./parsers/ftk_image:/app/parsers/ftk_image
@@ -19,11 +19,11 @@ services:
     image: postgres:latest
     container_name: postgres_db
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=TEST_BASE_PASSWORD123
+      - POSTGRES_DB=ftk
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
   celery_worker:
     build: .
@@ -48,3 +48,6 @@ services:
   redis:
     image: redis:latest
     container_name: redis
+
+volumes:
+  postgres_data:
