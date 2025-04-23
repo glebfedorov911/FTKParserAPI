@@ -38,8 +38,6 @@ class BeautifulSoupMixin:
         return self.soup.find_all(class_=selector)[index]
     
     def _double_slash_to_one(self, string: str) -> str:
-        if "https://" not in string:
-            return string
         string = string.replace("https://", "*").replace("//", "/").replace("*", "https://")
         return string
 
