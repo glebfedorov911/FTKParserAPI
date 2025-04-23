@@ -64,6 +64,8 @@ class BeautifulSoupGetPhoto(BeautifulSoupMixin):
         image = self._find_data_with_soup(selector, index)
 
         src = self._get_src_from_tag(image)
+        if not src:
+            return "Нет картинки"
         
         photo_url = self._create_photo_url(src)
 
@@ -73,8 +75,6 @@ class BeautifulSoupGetPhoto(BeautifulSoupMixin):
     
     def _get_src_from_tag(self, tag):
         src = tag.get("src") or tag.get("data-src")
-        if not src:
-            raise ValueError("Incorrect selector, not found tag")
         return src
 
     def _create_photo_url(self, src: str) -> str:

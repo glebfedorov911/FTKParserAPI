@@ -42,24 +42,27 @@ class FTKParser:
 
     async def parse_data(self) -> dict:
 
-        for url in self.urls:
+        for idx, url in enumerate(self.urls):
             self.current_pagination = 1
-            self.current_page = 0
 
             try:
-                url_formatted = url.format(num_page=self.current_pagination)
-                html_with_products = await self.requestor.get_html(url_formatted, headers=self.headers)
+                url_formatted, html_with_products = await self._get_html_from_formatted_page(idx, url)
                 last_pagination = await self._get_last_pagination_num(html_with_products)
                 key_parsed_data = url_formatted.split("/")[-2]
-            except aiohttp.ClientError as e:
+            except (ValueError, aiohttp.ClientError) as e:
                 print(f"do again because {e}")
                 self.urls.append(url)
 
 
             while self.current_pagination <= last_pagination:
-                try:
+                self.current_page = 0
+                try: 
+                    url_formatted, html_with_products = await self._get_html_from_formatted_page(idx, url)
+                    print(f"current: {self.current_pagination} | url: {url_formatted} | Получаем данные со страницы с продуктами")
                     results = await self._get_result_from_products(html_with_products)
+                    print("Получаем данные со страниц с продуктами")
                     self._set_result(key_parsed_data, results)
+                    print("Сохраняем данные")
                 except aiohttp.ClientError as e:
                     print(f"do again because {e}")
                     self.current_pagination -= 1
@@ -67,6 +70,13 @@ class FTKParser:
                     self.current_pagination += 1
                     
         return self.parsed_data
+
+    async def _get_html_from_formatted_page(self, idx: int, url: str) -> tuple[str, str]:
+        print(f"Парсим страницу {idx+1}/{len(self.urls)}")
+        url_formatted = url.format(num_page=self.current_pagination)
+        html_with_products = await self.requestor.get_html(url_formatted, headers=self.headers)
+        print("Получили код страницы")
+        return url_formatted, html_with_products
 
     async def _get_last_pagination_num(self, html: str):
         LAST_PAGINATION_INDEX = -2
@@ -81,13 +91,21 @@ class FTKParser:
         while True:
             try:
                 try:
+                    print("Получаем данные с продукта")
                     url_page_product = await self.parser.get_url_from_tag(html, "product__image-wrapper", self.current_page)
-                except IndexError:
+                    print(f"Получили данные: {url_page_product}")
+                except IndexError as e:
+                    print(f"ошибка {e}")
                     break
+                except aiohttp.ClientError as e:
+                    print(f"ошибка {e}")
+                    continue
 
                 html_with_one_product = await self.requestor.get_html(url_page_product, headers=self.headers)
                 result = await self._get_data_from_page(url_page_product, html_with_one_product)
+                print(f"result: {len(result)}")
                 results.append(result)
+                print("Сохраняем данные с продуктом в массив")
                 await asyncio.sleep(1)
             except aiohttp.ClientError as e:
                 print(f"do again because {e}")

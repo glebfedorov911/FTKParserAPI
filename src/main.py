@@ -12,3 +12,7 @@ async def hello(name: str = "World"):
         "message": f"Hello, {name}!",
         "status": status.HTTP_200_OK
     }
+
+
+from src.ftk.tasks import call_ftk_parser_endpoint
+call_ftk_parser_endpoint.apply_async(countdown=30)

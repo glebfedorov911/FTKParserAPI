@@ -11,9 +11,9 @@ celery = Celery(
 celery.conf.timezone = "UTC"
 celery.autodiscover_tasks(['src.ftk'])
 
-celery.conf.beat_schedule = {
-    "run-parser-weekly": {
-        "task": "src.ftk.tasks.call_ftk_parser_endpoint",
-        "schedule": crontab(minute="*/5")
-    }
-}
+# celery.conf.beat_schedule = {
+#     "run-parser-weekly": {
+#         "task": "src.ftk.tasks.call_ftk_parser_endpoint",
+#         "schedule": crontab(minute="*/1")
+#     }
+# }
