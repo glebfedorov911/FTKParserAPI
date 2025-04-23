@@ -52,7 +52,7 @@ class FTKParser:
             except Exception as e:
                 print(f"do again because {e}")
                 self.urls.append(url)
-
+                continue
 
             while self.current_pagination <= last_pagination:
                 self.current_page = 0
