@@ -23,7 +23,7 @@ services:
       - POSTGRES_PASSWORD=TEST_BASE_PASSWORD123
       - POSTGRES_DB=ftk
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
   celery_worker:
     build: .
@@ -48,3 +48,6 @@ services:
   redis:
     image: redis:latest
     container_name: redis
+
+volumes:
+  postgres_data:
