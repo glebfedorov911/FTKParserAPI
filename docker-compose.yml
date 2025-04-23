@@ -8,23 +8,19 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    env_file:
-      - .env
     environment:
-      - POSTGRES_URL=${POSTGRES_URL}
-      - DATABASE_ECHO=${DATABASE_ECHO}
+      - POSTGRES_URL=postgres
+      - DATABASE_ECHO=TEST_BASE_PASSWORD123
     volumes:
       - ./alembic/versions:/app/alembic/versions
 
   db:
     image: postgres:latest
     container_name: postgres_db
-    env_file:
-      - .env
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=ftk
+      - POSTGRES_PASSWORD=postgresql+asyncpg://postgres:TEST_BASE_PASSWORD123@db:5432/ftk
+      - POSTGRES_DB=True
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
 
@@ -35,8 +31,6 @@ services:
     depends_on:
       - ftk_parser
       - redis
-    env_file:
-      - .env
     volumes:
       - .:/code
 
@@ -47,8 +41,6 @@ services:
     depends_on:
       - ftk_parser
       - redis
-    env_file:
-      - .env
     volumes:
       - .:/code
 
