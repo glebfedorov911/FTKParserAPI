@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status
 
 from src.ftk.router import router as ftk_router
+from src.ftk.tasks import call_ftk_parser_endpoint
 
 
 app = FastAPI()
@@ -13,6 +14,4 @@ async def hello(name: str = "World"):
         "status": status.HTTP_200_OK
     }
 
-
-from src.ftk.tasks import call_ftk_parser_endpoint
-call_ftk_parser_endpoint.apply_async(countdown=30)
+call_ftk_parser_endpoint.apply_async(countdown=300)
