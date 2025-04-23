@@ -13,6 +13,7 @@ services:
       - DATABASE_ECHO=${DATABASE_ECHO}
     volumes:
       - ./alembic/versions:/app/alembic/versions
+      - ./parsers/ftk_image:/app/parsers/ftk_image
 
   db:
     image: postgres:latest

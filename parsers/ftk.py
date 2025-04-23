@@ -49,7 +49,7 @@ class FTKParser:
                 url_formatted, html_with_products = await self._get_html_from_formatted_page(idx, url)
                 last_pagination = await self._get_last_pagination_num(html_with_products)
                 key_parsed_data = url_formatted.split("/")[-2]
-            except (ValueError, aiohttp.ClientError) as e:
+            except Exception as e:
                 print(f"do again because {e}")
                 self.urls.append(url)
 
@@ -63,7 +63,7 @@ class FTKParser:
                     print("Получаем данные со страниц с продуктами")
                     self._set_result(key_parsed_data, results)
                     print("Сохраняем данные")
-                except aiohttp.ClientError as e:
+                except Exception as e:
                     print(f"do again because {e}")
                     self.current_pagination -= 1
                 finally:
@@ -97,7 +97,7 @@ class FTKParser:
                 except IndexError as e:
                     print(f"ошибка {e}")
                     break
-                except aiohttp.ClientError as e:
+                except Exception as e:
                     print(f"ошибка {e}")
                     continue
 
@@ -107,7 +107,7 @@ class FTKParser:
                 results.append(result)
                 print("Сохраняем данные с продуктом в массив")
                 await asyncio.sleep(1)
-            except aiohttp.ClientError as e:
+            except Exception as e:
                 print(f"do again because {e}")
                 self.current_page -= 1
             finally:
