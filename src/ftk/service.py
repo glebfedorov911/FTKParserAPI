@@ -22,14 +22,28 @@ class FTKParserService:
         for category in results:
             for product in results[category]:
                 await self.repo.create(
-                    product_name=product["title"],
-                    category=category,
+                    product_name=self._replace_spec(product["title"]),
+                    category=self._replace_spec(category),
                     url_to_product=product["url"],
-                    icons=product["signs"],
-                    characteristics=product["characteristics"]
+                    icons=self._replace_spec(product["signs"]),
+                    characteristics=self._replace_spec(product["characteristics"])
                 )
         actually_show_data = await self.repo.get_all(actually=True)       
         return {
             "data": actually_show_data,
             "count": len(actually_show_data)
         }
+
+    @staticmethod
+    def _replace_spec(field):
+        return (field.strip()
+                .replace("\t", " ")
+                .replace("\n", " ")
+                .replace(":", " ")
+                .replace("\\", " ")
+                .replace(",", " ")
+                .replace(";", " ")
+                .replace(".", " ")
+                .replace("-", " ")
+                .replace("_", " ")
+                )
