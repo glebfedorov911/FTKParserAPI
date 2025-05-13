@@ -14,4 +14,4 @@ async def hello(name: str = "World"):
         "status": status.HTTP_200_OK
     }
 
-call_ftk_parser_endpoint.apply_async(countdown=300)
+call_ftk_parser_endpoint.apply_async(countdown=60)
