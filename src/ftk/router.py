@@ -16,8 +16,18 @@ async def start_parser(
     background_tasks.add_task(get_result_ftk_parser_service, repo)
     return {"message": "success starting"}
 
-@router.get("/get_all")
+@router.get("/get-all")
 async def get_all_data_from_parsing(
+    repo: Repository = Depends(get_ftk_repository)
+):
+    data_to_show = await repo.get_all()
+    return {
+        "count": len(data_to_show),
+        "data": data_to_show
+    }
+
+@router.get("/get-all-actually")
+async def get_all_actually_data_from_parsing(
     repo: Repository = Depends(get_ftk_repository)
 ):
     data_to_show = await repo.get_all(actually=True)
