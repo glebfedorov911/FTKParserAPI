@@ -21,13 +21,16 @@ class FTKParserService:
         results = await self.ftk_parser.parse_data()
         for category in results:
             for product in results[category]:
-                await self.repo.create(
-                    product_name=self._replace_spec(product["title"]),
-                    category=self._replace_spec(category),
-                    url_to_product=product["url"],
-                    icons=self._replace_spec(product["signs"]),
-                    characteristics=self._replace_spec(product["characteristics"])
-                )
+                try:
+                    await self.repo.create(
+                        product_name=self._replace_spec(product["title"]),
+                        category=self._replace_spec(category),
+                        url_to_product=product["url"],
+                        icons=self._replace_spec(product["signs"]),
+                        characteristics=self._replace_spec(product["characteristics"])
+                    )
+                except Exception as e:
+                    print(e)
         actually_show_data = await self.repo.get_all(actually=True)       
         return {
             "data": actually_show_data,
