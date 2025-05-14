@@ -37,6 +37,15 @@ class FTKParserService:
             "count": len(actually_show_data)
         }
 
+    def _replace_all_spec_symbols_in_parsed_data(self, field):
+        if isinstance(field, list):
+            replaced_field = [
+                self._replace_spec(f)
+                for f in field
+            ]
+            return replaced_field
+        return self._replace_spec(field)
+
     @staticmethod
     def _replace_spec(field):
         return (field.strip()
