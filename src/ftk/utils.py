@@ -82,7 +82,7 @@ class BaseRepository(Repository):
         return data[0]
     
     async def get_all(self, **kwargs) -> List[Type[Base]]:
-        stmt = select(self.model).order_by(desc(self.model.id)).limit(10)
+        stmt = select(self.model)
         for k, v in kwargs.items():
             stmt = stmt.where(getattr(self.model, k)==v)
         return await self._get(stmt)
