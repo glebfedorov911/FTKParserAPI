@@ -23,11 +23,11 @@ class FTKParserService:
             for product in results[category]:
                 try:
                     await self.repo.create(
-                        product_name=self._replace_spec(product["title"]),
-                        category=self._replace_spec(category),
+                        product_name=self._replace_all_spec_symbols_in_parsed_data(product["title"]),
+                        category=self._replace_all_spec_symbols_in_parsed_data(category),
                         url_to_product=product["url"],
-                        icons=self._replace_spec(product["signs"]),
-                        characteristics=self._replace_spec(product["characteristics"])
+                        icons=self._replace_all_spec_symbols_in_parsed_data(product["signs"]),
+                        characteristics=self._replace_all_spec_symbols_in_parsed_data(product["characteristics"])
                     )
                 except Exception as e:
                     print(e)
@@ -38,13 +38,18 @@ class FTKParserService:
         }
 
     def _replace_all_spec_symbols_in_parsed_data(self, field):
+        replaced_field = field
         if isinstance(field, list):
             replaced_field = [
                 self._replace_spec(f)
                 for f in field
             ]
-            return replaced_field
-        return self._replace_spec(field)
+        if isinstance(field, dict):
+            replaced_field = {
+                self._replace_spec(key): self._replace_spec(value)
+                for key, value in field.items()
+            }
+        return replaced_field
 
     @staticmethod
     def _replace_spec(field):
@@ -58,4 +63,7 @@ class FTKParserService:
                 .replace(".", " ")
                 .replace("-", " ")
                 .replace("_", " ")
+                .replace("(", "")
+                .replace(")", "")
+                .replace("/", " ")
                 )
