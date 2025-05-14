@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, Result
+from sqlalchemy import select, Result, desc
 
 from typing import Type, List
 from abc import ABC, abstractmethod
@@ -82,7 +82,7 @@ class BaseRepository(Repository):
         return data[0]
     
     async def get_all(self, **kwargs) -> List[Type[Base]]:
-        stmt = select(self.model).limit(10)
+        stmt = select(self.model).order_by(desc(self.model.id)).limit(10)
         for k, v in kwargs.items():
             stmt = stmt.where(getattr(self.model, k)==v)
         return await self._get(stmt)
