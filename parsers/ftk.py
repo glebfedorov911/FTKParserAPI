@@ -122,14 +122,14 @@ class FTKParser:
             price_segment = "Ценовой сегмент не указан"
         article = await self.parser.get_data_from_tag(html, "item__vendor-item", 0)
         characteristics = await self.parser.save_table_to_json(html, "info__specs-table", 0)
+        characteristics["article"] = article
+        characteristics["pricesegment"] = price_segment
         signs = await self._get_sings_from_page(html)
         return {
             "url": url,
             "title": title,
             "characteristics": characteristics,
             "signs": signs,
-            "pricesegment": price_segment,
-            "article": article.split(" ")[1],
         }
 
     async def _get_sings_from_page(self, html: str) -> list:
