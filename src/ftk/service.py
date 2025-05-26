@@ -46,7 +46,7 @@ class FTKParserService:
             ]
         if isinstance(field, dict):
             replaced_field = {
-                self._replace_spec_key(key): self._replace_spec(value)
+                self._replace_spec_key(key): self._replace_all_spec_symbols_in_parsed_data(value)
                 for key, value in field.items()
             }
         return replaced_field
