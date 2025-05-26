@@ -12,11 +12,11 @@ import asyncio
 class FTKParser:
     urls = [
         # "https://www.f-tk.ru/catalog/spetsodezhda/?PAGEN_1={num_page}",
-        "https://www.f-tk.ru/catalog/spetsobuv/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/spetsobuv/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/siz/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/zashchita_ruk/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/tekstil_myagkiy_inventar/?PAGEN_1={num_page}",
-        # "https://www.f-tk.ru/catalog/khoztovary_inventar_mebel/?PAGEN_1={num_page}",
+        "https://www.f-tk.ru/catalog/khoztovary_inventar_mebel/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/logotipy_/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/po_otraslyam_/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/poligrafiya/?PAGEN_1={num_page}",
@@ -116,6 +116,11 @@ class FTKParser:
     
     async def _get_data_from_page(self, url: str, html: str) -> tuple:
         title = await self.parser.get_data_from_tag(html, "content__title wrapper", 0)
+        try:
+            price_segment = await self.parser.get_data_from_tag(html, "item__price-category_standard", 0)
+        except:
+            price_segment = "Ценовой сегмент не указан"
+        article = await self.parser.get_data_from_tag(html, "item__vendor-item", 0)
         characteristics = await self.parser.save_table_to_json(html, "info__specs-table", 0)
         signs = await self._get_sings_from_page(html)
         return {
@@ -123,6 +128,8 @@ class FTKParser:
             "title": title,
             "characteristics": characteristics,
             "signs": signs,
+            "pricesegment": price_segment,
+            "article": article.split(" ")[1],
         }
 
     async def _get_sings_from_page(self, html: str) -> list:
