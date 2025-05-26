@@ -12,10 +12,10 @@ import asyncio
 class FTKParser:
     urls = [
         # "https://www.f-tk.ru/catalog/spetsodezhda/?PAGEN_1={num_page}",
-        # "https://www.f-tk.ru/catalog/spetsobuv/?PAGEN_1={num_page}",
+        "https://www.f-tk.ru/catalog/spetsobuv/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/siz/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/zashchita_ruk/?PAGEN_1={num_page}",
-        "https://www.f-tk.ru/catalog/tekstil_myagkiy_inventar/?PAGEN_1={num_page}",
+        # "https://www.f-tk.ru/catalog/tekstil_myagkiy_inventar/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/khoztovary_inventar_mebel/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/logotipy_/?PAGEN_1={num_page}",
         # "https://www.f-tk.ru/catalog/po_otraslyam_/?PAGEN_1={num_page}",

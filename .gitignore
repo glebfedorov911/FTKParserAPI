@@ -2,3 +2,5 @@
 /.env
 /.venv
 /postgres_data
+/parsers/spec.json
+/parsers/test.py

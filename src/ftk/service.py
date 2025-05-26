@@ -46,13 +46,30 @@ class FTKParserService:
             ]
         if isinstance(field, dict):
             replaced_field = {
-                self._replace_spec(key, True): self._replace_spec(value)
+                self._replace_spec_key(key): self._replace_spec(value)
                 for key, value in field.items()
             }
         return replaced_field
 
     @staticmethod
-    def _replace_spec(field, translate=False):
+    def _replace_spec(field):
+        return (field.strip()
+                .replace("\t", "")
+                .replace("\n", "")
+                .replace(":", "")
+                .replace("\\", "")
+                .replace(",", "")
+                .replace(";", "")
+                .replace(".", "")
+                .replace("-", " ")
+                .replace("_", " ")
+                .replace("(", "")
+                .replace(")", "")
+                .replace("/", "")
+                )
+
+    @staticmethod
+    def _replace_spec_key(field):
         translit_dict = {
             'А': 'A', 'а': 'a',
             'Б': 'B', 'б': 'b',
@@ -88,8 +105,7 @@ class FTKParserService:
             'Ю': 'Yu', 'ю': 'yu',
             'Я': 'Ya', 'я': 'ya',
         }
-        if translate:
-            field = ''.join([translit_dict.get(c, c) for c in field])
+        field = ''.join([translit_dict.get(c, c) for c in field])
         return (field.strip()
                 .replace("\t", "")
                 .replace("\n", "")
