@@ -42,7 +42,10 @@ class FTKParserService:
         icons_collection = {}
         for icon in icons:
             icon = icon.split(" ")
-            key, value = icon[0], " ".join(icon[1:])
+            if len(icon) > 1:
+                key, value = icon[0], " ".join(icon[1:])
+            else:
+                key, value = "Остальное", icon[0]
             if key not in icons_collection:
                 icons_collection[key] = []
             icons_collection[key].append(value)
