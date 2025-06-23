@@ -82,8 +82,7 @@ class FTKParser:
         LAST_PAGINATION_INDEX = -2
         try:
             last_num = await self.parser.get_data_from_tag(html, "pagination__item", LAST_PAGINATION_INDEX)
-            # return int(last_num)
-            return 3
+            return int(last_num)
         except:
             return 1
 
