@@ -26,7 +26,7 @@ class FTKParserService:
                         product_name=self._replace_all_spec_symbols_in_parsed_data(product["title"]),
                         category=self._replace_all_spec_symbols_in_parsed_data(category),
                         url_to_product=product["url"],
-                        icons=self._replace_all_spec_symbols_in_parsed_data(product["signs"]),
+                        icons=self._edit_icons(self._replace_all_spec_symbols_in_parsed_data(product["signs"])),
                         characteristics=self._replace_all_spec_symbols_in_parsed_data(product["characteristics"])
                     )
                 except Exception as e:
@@ -36,6 +36,17 @@ class FTKParserService:
             "data": actually_show_data,
             "count": len(actually_show_data)
         }
+
+    @staticmethod
+    def _edit_icons(icons: list):
+        icons_collection = {}
+        for icon in icons:
+            icon = icon.split(" ")
+            key, value = icon[0], " ".join(icon[1:])
+            if key not in icons_collection:
+                icons_collection[key] = []
+            icons_collection[key].append(value)
+        return icons_collection
 
     def _replace_all_spec_symbols_in_parsed_data(self, field):
         replaced_field = field
