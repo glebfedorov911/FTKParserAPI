@@ -26,7 +26,7 @@ class FTKParserService:
                         product_name=self._replace_all_spec_symbols_in_parsed_data(product["title"]),
                         category=self._replace_all_spec_symbols_in_parsed_data(category),
                         url_to_product=product["url"],
-                        icons=self._edit_icons(self._replace_all_spec_symbols_in_parsed_data(product["signs"])),
+                        icons=self._replace_all_spec_symbols_in_parsed_data(product["signs"]),
                         characteristics=self._replace_all_spec_symbols_in_parsed_data(product["characteristics"])
                     )
                 except Exception as e:
